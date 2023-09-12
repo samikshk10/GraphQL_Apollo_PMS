@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import dotenv from "dotenv";
 import { GraphQLError } from "graphql";
 import {
   LoginInputInterface,
@@ -6,6 +7,9 @@ import {
   UserInterface,
 } from "../interfaces";
 import { User } from "../models";
+import jwt from "jsonwebtoken";
+
+dotenv.config();
 
 export const getUsers = async () => {
   try {
@@ -32,6 +36,8 @@ export const getUsers = async () => {
     });
   }
 };
+
+//Sign Up
 
 export const SignUp = async (
   parents: any,
@@ -80,14 +86,11 @@ export const SignUp = async (
       email,
       password: hashedPassword,
     });
-
-    console.log(newUser.dataValues);
     return {
       ...newUser.dataValues,
       message: "Sign up Successfully",
     };
   } catch (error: any) {
-    console.log(error);
     throw new Error(error.message);
   }
 };
@@ -130,8 +133,21 @@ export const Login = async (
         },
       });
     }
+
+    const payload = {
+      firstName: userFind.dataValues.firstName,
+      lastName: userFind.dataValues.lastName,
+      id: userFind.dataValues.id,
+      email: userFind.dataValues.email,
+    };
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET!, {
+      expiresIn: "1d",
+    });
+
     return {
       ...userFind.dataValues,
+      token,
       message: "Login Successfully",
     };
   } catch (error: any) {

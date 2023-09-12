@@ -8,11 +8,23 @@ type User {
     createdAt: Date
     updatedAt: Date
     message: String
+    token: String
+}
+
+type Product{
+    id:ID
+    name: String
+    price: Int
+    user_id: Int
+    createdAt: Date
+    updatedAt: Date
 }
 
 type Query{
     users: [User]
+    getallproduct: [Product]
 }
+
 
 input SignUpUserInput{
     firstName: String!
@@ -29,8 +41,17 @@ input LoginUserInput{
 }
 
 
+input AddProductInput{
+  name: String!
+  price: Int!
+}
+
+
 type Mutation{
     signup(input: SignUpUserInput):User
     login(input: LoginUserInput):User
+
+    addproduct(input: AddProductInput):Product
+    
 }
 `;

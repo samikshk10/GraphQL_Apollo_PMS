@@ -1,9 +1,9 @@
 import { DataTypes } from "@sequelize/core";
 import { sequelize } from "../config";
-import { UserInterface } from "../interfaces";
+import { ProductInterface } from "../interfaces/ProductInterface";
 
-const User = sequelize.define<UserInterface>(
-  "User",
+const Product = sequelize.define<ProductInterface>(
+  "Products",
   {
     id: {
       allowNull: false,
@@ -41,8 +41,8 @@ const User = sequelize.define<UserInterface>(
   },
   {
     timestamps: true,
-    paranoid: true,
+    // paranoid: true,
   }
 );
 
-export default User;
+export default Product;

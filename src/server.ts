@@ -19,6 +19,17 @@ const initApp = async () => {
 
   const { url } = await startStandaloneServer(server, {
     listen: { port },
+    context: ({ req }: { req: any }) => {
+      try {
+        const token = req.headers.authorization;
+        if (!token) {
+          throw new Error("Token not Found");
+        }
+        return Promise.resolve({ token });
+      } catch (error: any) {
+        throw new Error(error.message);
+      }
+    },
   });
 
   console.log(`Server started at Port : ${port} and url: ${url} `);
