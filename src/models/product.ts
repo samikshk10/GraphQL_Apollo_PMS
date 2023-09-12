@@ -6,32 +6,42 @@ const User = sequelize.define<UserInterface>(
   "User",
   {
     id: {
-      type: DataTypes.INTEGER,
+      allowNull: false,
       autoIncrement: true,
       primaryKey: true,
+      type: DataTypes.INTEGER,
     },
-    firstName: {
+    name: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    lastName: {
-      type: DataTypes.STRING,
+    price: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+    },
+    user_id: {
+      type: DataTypes.INTEGER,
+      references: {
+        table: "Users",
+        key: "id",
+      },
+      onUpdate: "CASCADE",
+      onDelete: "CASCADE",
       allowNull: false,
     },
 
-    email: {
-      type: DataTypes.STRING,
-      unique: true,
+    createdAt: {
       allowNull: false,
+      type: DataTypes.DATE,
     },
-    password: {
-      type: DataTypes.STRING,
+    updatedAt: {
       allowNull: false,
+      type: DataTypes.DATE,
     },
   },
   {
     timestamps: true,
-    // paranoid: true,
+    paranoid: true,
   }
 );
 

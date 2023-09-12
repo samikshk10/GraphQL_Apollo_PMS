@@ -9,3 +9,17 @@ export interface UserInterface extends Model {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+export interface SignUpInputInterface {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface LoginInputInterface {
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
