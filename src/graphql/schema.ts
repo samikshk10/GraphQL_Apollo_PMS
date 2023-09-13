@@ -18,6 +18,7 @@ type Product{
     user_id: Int
     createdAt: Date
     updatedAt: Date
+    user: User
 }
 type UserResponse{
     data: User
@@ -28,7 +29,7 @@ type UserResponse{
 
 
 type ProductResponse {
-    data:Product
+    data:[Product]
     message: String
 }
 

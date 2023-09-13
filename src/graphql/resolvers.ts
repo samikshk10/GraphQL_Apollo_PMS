@@ -8,7 +8,6 @@ import {
   LoginInputInterface,
   SignUpInputInterface,
   UpdateProductInterface,
-  UserInterface,
 } from "../interfaces";
 import { authenticate } from "../Middleware";
 import jwt, { JwtPayload } from "jsonwebtoken";
@@ -45,7 +44,16 @@ export const resolvers = {
     //Product query
     getallproduct: async () => {
       try {
-        const getProduct = await Product.findAll();
+        const getProduct = await Product.findAll({
+          include: [
+            {
+              model: User,
+              as: "user",
+              attributes: ["firstName", "lastName"],
+            },
+          ],
+        });
+
         if (getProduct.length <= 0) {
           throw new GraphQLError(`Product not found`, {
             extensions: {
@@ -57,6 +65,8 @@ export const resolvers = {
             },
           });
         }
+
+        console.log(getProduct);
         return getProduct;
       } catch (error: any) {
         throw new Error(error.message);
@@ -240,6 +250,7 @@ export const resolvers = {
         });
         return {
           message: "Product added successfully",
+          user: {},
           data: newUser,
         };
       } catch (error: any) {

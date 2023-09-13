@@ -1,9 +1,10 @@
 import { DataTypes } from "@sequelize/core";
 import { sequelize } from "../config";
 import { ProductInterface } from "../interfaces/ProductInterface";
+import { User } from "./index";
 
 const Product = sequelize.define<ProductInterface>(
-  "Products",
+  "Product",
   {
     id: {
       allowNull: false,
@@ -51,5 +52,14 @@ const Product = sequelize.define<ProductInterface>(
     paranoid: true,
   }
 );
+User.hasMany(Product, {
+  foreignKey: "user_id", 
+  as: "user", 
+});
+
+Product.belongsTo(User, {
+  foreignKey: "user_id",
+  as: "user",
+});
 
 export default Product;
