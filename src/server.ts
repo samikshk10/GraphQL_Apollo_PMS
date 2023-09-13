@@ -23,7 +23,7 @@ const initApp = async () => {
       try {
         const token = req.headers.authorization;
         if (!token) {
-          throw new Error("Token not Found");
+          return Promise.resolve({});
         }
         return Promise.resolve({ token });
       } catch (error: any) {

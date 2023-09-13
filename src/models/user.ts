@@ -30,8 +30,9 @@ const User = sequelize.define<UserInterface>(
     },
   },
   {
+    tableName: "Users",
     timestamps: true,
-    // paranoid: true,
+    underscored: true,
   }
 );
 

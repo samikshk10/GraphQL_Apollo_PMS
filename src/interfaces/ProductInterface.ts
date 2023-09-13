@@ -1,16 +1,29 @@
 import { Model } from "@sequelize/core";
+import { ProductCategory } from "../Enum";
 
 export interface ProductInterface extends Model {
   id?: number;
   name?: string;
   price?: number;
   user_id?: number;
-  created_at?: Date;
-  updated_at?: Date;
-  token?: string;
+  category?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface AddProductInterface {
   name: string;
   price: number;
+  category: ProductCategory;
+}
+
+export interface DeleteProductInterface {
+  id: number;
+}
+
+export interface UpdateProductInterface {
+  id: number;
+  name?: string;
+  price?: number;
+  category?: string;
 }

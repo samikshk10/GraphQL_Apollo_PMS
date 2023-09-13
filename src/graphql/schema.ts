@@ -1,3 +1,4 @@
+import { UserInterface } from "./../interfaces/UserInterface";
 export const typeDefs = `#graphql
 scalar Date
 type User {
@@ -7,22 +8,34 @@ type User {
     email:String
     createdAt: Date
     updatedAt: Date
-    message: String
-    token: String
 }
 
 type Product{
     id:ID
     name: String
     price: Int
+    category: String
     user_id: Int
     createdAt: Date
     updatedAt: Date
+}
+type UserResponse{
+    data: User
+    message: String
+    token: String
+}
+
+
+
+type ProductResponse {
+    data:Product
+    message: String
 }
 
 type Query{
     users: [User]
     getallproduct: [Product]
+    getproduct:[Product]
 }
 
 
@@ -44,14 +57,29 @@ input LoginUserInput{
 input AddProductInput{
   name: String!
   price: Int!
+  category: String!
+}
+
+
+
+input DeleteProductInput{
+    id: ID!
+}
+
+input UpdateProductInput{
+    id: ID!
+    name: String
+    price: Int
+    category: String
 }
 
 
 type Mutation{
-    signup(input: SignUpUserInput):User
-    login(input: LoginUserInput):User
+    signup(input: SignUpUserInput):UserResponse
+    login(input: LoginUserInput):UserResponse
 
-    addproduct(input: AddProductInput):Product
-    
+    addproduct(input: AddProductInput):ProductResponse
+    deleteproduct(input: DeleteProductInput): ProductResponse
+    updateproduct(input: UpdateProductInput): ProductResponse
 }
 `;

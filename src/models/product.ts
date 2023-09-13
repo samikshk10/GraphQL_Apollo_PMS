@@ -19,6 +19,11 @@ const Product = sequelize.define<ProductInterface>(
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
+    category: {
+      type: DataTypes.ENUM("Grocery", "Electronics", "Clothings", "Others"),
+      defaultValue: "Others",
+      allowNull: false,
+    },
     user_id: {
       type: DataTypes.INTEGER,
       references: {
@@ -40,8 +45,10 @@ const Product = sequelize.define<ProductInterface>(
     },
   },
   {
+    tableName: "Products",
     timestamps: true,
-    // paranoid: true,
+    underscored: true,
+    paranoid: true,
   }
 );
 
