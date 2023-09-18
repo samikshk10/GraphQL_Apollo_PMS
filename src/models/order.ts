@@ -1,9 +1,10 @@
 import { DataTypes } from "@sequelize/core";
 import { sequelize } from "../config";
-import { ProductInterface } from "../interfaces/ProductInterface";
+import { User } from "./index";
+import { Product } from "./index";
 
-const Product = sequelize.define<ProductInterface>(
-  "Product",
+const Order = sequelize.define(
+  "Order",
   {
     id: {
       allowNull: false,
@@ -11,20 +12,8 @@ const Product = sequelize.define<ProductInterface>(
       primaryKey: true,
       type: DataTypes.INTEGER,
     },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    price: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
-    },
-    category: {
-      type: DataTypes.ENUM("Grocery", "Electronics", "Clothings", "Others"),
-      defaultValue: "Others",
-      allowNull: false,
-    },
-    user_id: {
+
+    userId: {
       type: DataTypes.INTEGER,
       references: {
         table: "Users",
@@ -35,6 +24,16 @@ const Product = sequelize.define<ProductInterface>(
       allowNull: false,
     },
 
+    status: {
+      type: DataTypes.ENUM("pending", "tracking", "delivered"),
+      defaultValue: "pending",
+      allowNull: false,
+    },
+
+    totalPrice: {
+      type: DataTypes.DECIMAL(10, 2),
+    },
+
     createdAt: {
       allowNull: false,
       type: DataTypes.DATE,
@@ -43,13 +42,26 @@ const Product = sequelize.define<ProductInterface>(
       allowNull: false,
       type: DataTypes.DATE,
     },
+    deletedAt: {
+      type: DataTypes.DATE,
+    },
   },
   {
-    tableName: "Products",
+    tableName: "Orders",
     timestamps: true,
-    underscored: true,
     paranoid: true,
+    underscored: true,
   }
 );
 
-export default Product;
+User.hasMany(Order, {
+  foreignKey: "order_id",
+  as: "order",
+});
+
+Order.belongsTo(User, {
+  foreignKey: "user_id",
+  as: "user",
+});
+
+export default Order;

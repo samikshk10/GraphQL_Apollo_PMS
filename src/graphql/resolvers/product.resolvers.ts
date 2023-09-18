@@ -1,0 +1,491 @@
+import { GraphQLError } from "graphql";
+import { Product, User, Cart, Order } from "../../models";
+import {
+  AddProductInterface,
+  ContextInterface,
+  DeleteProductInterface,
+  UpdateProductInterface,
+  addCartInterface,
+  removeCartInterface,
+} from "../../interfaces";
+import { authenticate } from "../../Middleware";
+import { JwtPayload } from "jsonwebtoken";
+
+export const productResolvers = {
+  Query: {
+    //Product query
+    getallproduct: async () => {
+      try {
+        const getProduct = await Product.findAll({
+          include: [
+            {
+              model: User,
+              as: "user",
+            },
+          ],
+        });
+
+        if (getProduct.length <= 0) {
+          throw new GraphQLError(`Product not found`, {
+            extensions: {
+              code: "NO_PRODUCT_FOUND",
+              http: {
+                status: 404,
+              },
+              message: `No Product Found`,
+            },
+          });
+        }
+        console.log(getProduct);
+        return {
+          data: getProduct,
+        };
+      } catch (error: any) {
+        throw new Error(error.message);
+      }
+    },
+    getproduct: async (parent: any, args: any, context: ContextInterface) => {
+      try {
+        if (!context?.token) {
+          throw new Error("Authorization Token Missing");
+        }
+
+        const tokenData = (await authenticate(context?.token)) as JwtPayload;
+        if (tokenData?.user) {
+          const getProduct = await Product.findAll({
+            where: { user_id: tokenData?.user?.id },
+            include: [
+              {
+                model: User,
+                as: "user",
+              },
+            ],
+          });
+
+          if (getProduct.length <= 0) {
+            throw new GraphQLError("There are no Product for current User", {
+              extensions: {
+                code: "NO_PRODUCT_FOUND",
+                http: { status: 404 },
+                message: `No Product for current User`,
+              },
+            });
+          }
+
+          console.log(getProduct);
+          return {
+            data: getProduct,
+          };
+        }
+      } catch (error: any) {
+        throw new Error(error.message);
+      }
+    },
+
+    getcart: async (parent: any, args: any, context: ContextInterface) => {
+      console.log("hello world");
+      try {
+        if (!context?.token) {
+          throw new Error("Authorization Token Missing");
+        }
+
+        const tokenData = (await authenticate(context?.token)) as JwtPayload;
+        if (tokenData?.user) {
+          const getcart = await Cart.findAll({
+            where: { user_id: tokenData?.user?.id },
+            include: [
+              {
+                model: Product,
+                as: "product",
+                include: [
+                  {
+                    model: User,
+                    as: "user",
+                  },
+                ],
+              },
+            ],
+          });
+
+          if (getcart.length <= 0) {
+            throw new GraphQLError(
+              "There are no item in cart for current User",
+              {
+                extensions: {
+                  code: "NO_CART_ITEM_FOUND",
+                  http: { status: 404 },
+                  message: `No cart item for current User`,
+                },
+              }
+            );
+          }
+
+          const cartData = getcart.map((cart) => ({
+            id: cart.dataValues.id,
+            userproduct: cart.dataValues.product,
+            quantity: cart.dataValues.quantity,
+          }));
+
+          console.log("this is getCart >>>>", getcart);
+          return {
+            data: cartData,
+          };
+        }
+      } catch (error: any) {
+        throw new Error(error.message);
+      }
+    },
+  },
+  Mutation: {
+    //product Mutation
+    addproduct: async (
+      parents: any,
+      args: { input: AddProductInterface },
+      context: ContextInterface
+    ) => {
+      const { name, price, category } = args.input;
+
+      if (!context?.token) {
+        throw new Error("Authorization Token missing");
+      }
+
+      const tokenData = (await authenticate(context?.token)) as JwtPayload;
+
+      try {
+        const newUser: any = await Product.create({
+          name,
+          price,
+          user_id: tokenData?.user?.id,
+          category,
+        });
+
+        console.log(newUser);
+        return {
+          data: newUser,
+          message: "Product added successfully",
+        };
+      } catch (error: any) {
+        throw new Error(error.message);
+      }
+    },
+
+    //deleteproduct
+    deleteproduct: async (
+      parents: any,
+      args: { input: DeleteProductInterface },
+      context: ContextInterface
+    ) => {
+      const { id } = args.input;
+
+      if (!context?.token) {
+        throw new Error("Authorization Token missing");
+      }
+
+      const tokenData = (await authenticate(context?.token)) as JwtPayload;
+
+      try {
+        const ProductDetails = await Product.findOne({ where: { id } });
+        if (ProductDetails == null) {
+          throw new Error("Product Not Found");
+        }
+
+        if (tokenData?.user?.id !== ProductDetails.user_id) {
+          throw new GraphQLError("Unauthorized User", {
+            extensions: {
+              code: "UNAUTHORIZED",
+              http: { status: 401 },
+            },
+          });
+        }
+
+        await ProductDetails.destroy();
+
+        console.log(ProductDetails);
+        return {
+          message: "Product Deleted successfully",
+          data: ProductDetails,
+        };
+      } catch (error: any) {
+        throw new Error(error.message);
+      }
+    },
+
+    updateproduct: async (
+      parents: any,
+      args: { input: UpdateProductInterface },
+      context: ContextInterface
+    ) => {
+      const { id, name, price, category } = args.input;
+
+      if (!context?.token) {
+        throw new Error("Authorization Token missing");
+      }
+
+      const tokenData = (await authenticate(context?.token)) as JwtPayload;
+
+      try {
+        const ProductDetails = await Product.findOne({ where: { id } });
+        if (ProductDetails == null) {
+          throw new Error("Product Not Found");
+        }
+
+        if (tokenData?.user?.id !== ProductDetails.user_id) {
+          throw new GraphQLError("Unauthorized User", {
+            extensions: {
+              code: "UNAUTHORIZED",
+              http: { status: 401 },
+              message: "User is not authorized to Update",
+            },
+          });
+        }
+
+        const newData = {
+          name,
+          price,
+          category,
+        };
+
+        console.log(newData);
+        const updateProduct = await Product.update(newData, {
+          where: { id },
+        });
+
+        if (!updateProduct) {
+          throw new GraphQLError("Product Update Failed", {
+            extensions: {
+              code: "PRODUCT_UPDATE_FAILED",
+              http: { status: 401 },
+              message: "Product update has been failed",
+            },
+          });
+        }
+        console.log("this is update Product" + updateProduct);
+        return {
+          data: { id, ...newData },
+          message: "Product Updated successfully",
+        };
+      } catch (error: any) {
+        throw new Error(error.message);
+      }
+    },
+
+    addtocart: async (
+      parents: any,
+      args: { input: addCartInterface },
+      context: ContextInterface
+    ) => {
+      const { quantity, product_id } = args.input;
+
+      if (!context?.token) {
+        throw new Error("Authorization Token missing");
+      }
+
+      const tokenData = (await authenticate(context?.token)) as JwtPayload;
+
+      try {
+        const product = await Product.findByPk(product_id, {
+          include: [
+            {
+              model: User,
+              as: "user",
+            },
+          ],
+        });
+
+        console.log("this is product>>>>", product);
+
+        if (!product) {
+          throw new Error(`Product with ID ${product_id} not found`);
+        }
+        // Check if the product is already in the cart
+        const existingCartEntry = await Cart.findOne({
+          where: {
+            product_id,
+            user_id: tokenData?.user?.id,
+          },
+        });
+
+        if (existingCartEntry) {
+          const newQuantity = existingCartEntry.dataValues.quantity + quantity;
+
+          console.log("this is new quanityt" + newQuantity);
+          const cartUpdate = await Cart.update(
+            { quantity: newQuantity },
+            {
+              where: { product_id, user_id: tokenData?.user?.id },
+            }
+          );
+          if (!cartUpdate) {
+            throw new GraphQLError("Cart Update Failed", {
+              extensions: {
+                code: "CART_UPDATE_FAILED",
+                http: { status: 401 },
+                message: "Cart update has been failed",
+              },
+            });
+          }
+          console.log("Updated cart entry:", existingCartEntry);
+
+          return {
+            data: product,
+            quantity: newQuantity,
+            message: "Quantity updated in Cart",
+          };
+        } else {
+          const newCartEntry = await Cart.create({
+            productId: product_id,
+            userId: tokenData?.user?.id,
+            quantity,
+          });
+          console.log("New cart entry:", newCartEntry);
+
+          return {
+            data: product,
+            quantity,
+            message: "Product added to Cart",
+          };
+        }
+      } catch (error: any) {
+        throw new Error(error.message);
+      }
+    },
+
+    removefromcart: async (
+      parents: any,
+      args: { input: removeCartInterface },
+      context: ContextInterface
+    ) => {
+      const { cart_id } = args.input;
+
+      if (!context?.token) {
+        throw new Error("Authorization Token missing");
+      }
+
+      const tokenData = (await authenticate(context?.token)) as JwtPayload;
+
+      try {
+        const cartItem = await Cart.findByPk(cart_id, {
+          include: [
+            {
+              model: Product,
+              as: "product",
+              include: [
+                {
+                  model: User,
+                  as: "user",
+                },
+              ],
+            },
+          ],
+        });
+
+        const productData = await Product.findByPk(
+          cartItem?.dataValues.product_id
+        );
+        if (!productData) {
+          throw new GraphQLError("Product not found", {
+            extensions: {
+              code: "PRODUCT_NOT_FOUND",
+              http: { status: 401 },
+              message: "The product is not found",
+            },
+          });
+        }
+
+        if (!cartItem) {
+          throw new GraphQLError("Cart Item is not found", {
+            extensions: {
+              code: "CART_NOT_FOUND",
+              http: { status: 401 },
+              message: "The Cart Item is not found ",
+            },
+          });
+        }
+
+        if (tokenData?.user?.id !== cartItem!.dataValues.user_id) {
+          throw new GraphQLError("The user is not authorized", {
+            extensions: {
+              code: "UNAUTHORIZED_USER",
+              http: { status: 401 },
+              message: "the user is not authorized to delete the cart",
+            },
+          });
+        }
+
+        console.log("this is cartItem", cartItem);
+
+        if (!cartItem) {
+          throw new Error(`Cart with ID ${cart_id} not found`);
+        }
+
+        await cartItem.destroy();
+        console.log(cartItem);
+        return {
+          data: cartItem,
+          message: "Product removed from  Cart",
+        };
+      } catch (error: any) {
+        throw new Error(error.message);
+      }
+    },
+
+    removeallfromcart: async (
+      parents: any,
+      args: any,
+      context: ContextInterface
+    ) => {
+      if (!context?.token) {
+        throw new Error("Authorization Token missing");
+      }
+
+      const tokenData = (await authenticate(context?.token)) as JwtPayload;
+
+      try {
+        const cartItems = await Cart.findAll({
+          where: { user_id: tokenData?.user?.id },
+          include: [
+            {
+              model: Product,
+              as: "product",
+              include: [
+                {
+                  model: User,
+                  as: "user",
+                },
+              ],
+            },
+          ],
+        });
+
+        if (cartItems.length <= 0) {
+          throw new GraphQLError("No items in Cart", {
+            extensions: {
+              code: "CART_NOT_FOUND",
+              http: { status: 401 },
+              message: "No items in cart",
+            },
+          });
+        }
+        for (let cartItem of cartItems) {
+          if (tokenData?.user?.id !== cartItem!.dataValues.user_id) {
+            throw new GraphQLError("The user is not authorized", {
+              extensions: {
+                code: "UNAUTHORIZED_USER",
+                http: { status: 401 },
+                message: "the user is not authorized to delete the cart",
+              },
+            });
+          }
+          await cartItem.destroy();
+        }
+        console.log(cartItems);
+        return {
+          data: cartItems,
+          message: "Removed All Item from Cart",
+        };
+      } catch (error: any) {
+        throw new Error(error.message);
+      }
+    },
+  },
+};

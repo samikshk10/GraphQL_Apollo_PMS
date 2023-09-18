@@ -2,8 +2,19 @@ import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import dotenv from "dotenv";
 import { sequelize } from "./config";
-import { typeDefs, resolvers } from "./graphql";
-
+import {
+  userTypeDefs,
+  productTypeDefs,
+  orderTypeDefs,
+  cartTypeDefs,
+} from "./graphql/typeDefs/index";
+import {
+  authResolvers,
+  productResolvers,
+  orderResolvers,
+  cartResolvers,
+} from "./graphql/resolvers/index";
+import { context } from "./helpers";
 dotenv.config();
 
 const initApp = async () => {
@@ -11,25 +22,15 @@ const initApp = async () => {
   console.log("Database Connection has been established successfully");
 
   const server = new ApolloServer({
-    typeDefs,
-    resolvers,
+    typeDefs: [userTypeDefs, productTypeDefs, orderTypeDefs, cartTypeDefs],
+    resolvers: [authResolvers, productResolvers, orderResolvers, cartResolvers],
   });
 
   const port = +process.env.PORT! || 4100;
 
   const { url } = await startStandaloneServer(server, {
     listen: { port },
-    context: ({ req }: { req: any }) => {
-      try {
-        const token = req.headers.authorization;
-        if (!token) {
-          return Promise.resolve({});
-        }
-        return Promise.resolve({ token });
-      } catch (error: any) {
-        throw new Error(error.message);
-      }
-    },
+    context: context,
   });
 
   console.log(`Server started at Port : ${port} and url: ${url} `);
