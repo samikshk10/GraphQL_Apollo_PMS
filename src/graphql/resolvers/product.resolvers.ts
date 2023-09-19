@@ -5,8 +5,6 @@ import {
   ContextInterface,
   DeleteProductInterface,
   UpdateProductInterface,
-  addCartInterface,
-  removeCartInterface,
 } from "../../interfaces";
 import { authenticate } from "../../Middleware";
 import { JwtPayload } from "jsonwebtoken";
@@ -44,7 +42,11 @@ export const productResolvers = {
         throw new Error(error.message);
       }
     },
-    getproduct: async (parent: any, args: any, context: ContextInterface) => {
+    getproduct: async (
+      parent: ParentNode,
+      args: any,
+      context: ContextInterface
+    ) => {
       try {
         if (!context?.token) {
           throw new Error("Authorization Token Missing");
@@ -85,7 +87,7 @@ export const productResolvers = {
   Mutation: {
     //product Mutation
     addproduct: async (
-      parents: any,
+      parents: ParentNode,
       args: { input: AddProductInterface },
       context: ContextInterface
     ) => {
@@ -98,10 +100,10 @@ export const productResolvers = {
       const tokenData = (await authenticate(context?.token)) as JwtPayload;
 
       try {
-        const newUser: any = await Product.create({
+        const newUser = await Product.create({
           name,
           price,
-          user_id: tokenData?.user?.id,
+          userId: tokenData?.user?.id,
           category,
         });
 
@@ -117,7 +119,7 @@ export const productResolvers = {
 
     //deleteproduct
     deleteproduct: async (
-      parents: any,
+      parents: ParentNode,
       args: { input: DeleteProductInterface },
       context: ContextInterface
     ) => {
@@ -157,7 +159,7 @@ export const productResolvers = {
     },
 
     updateproduct: async (
-      parents: any,
+      parents: ParentNode,
       args: { input: UpdateProductInterface },
       context: ContextInterface
     ) => {

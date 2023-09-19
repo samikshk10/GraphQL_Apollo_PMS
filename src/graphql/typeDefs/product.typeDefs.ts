@@ -6,11 +6,18 @@ export const productTypeDefs = `#graphql
     price: Int
     category: String
     user_id: Int
-    user: User
+  }
+
+  type UserProduct{
+    id:Int
+    name:String
+    price:Int
+    category:String
+    user:User
   }
 
   type ProductsResponse{
-    data: [Product]
+    data: [UserProduct]
   }
 
 

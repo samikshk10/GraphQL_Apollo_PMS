@@ -18,6 +18,7 @@ const Cart = sequelize.define(
         key: "id",
       },
       allowNull: false,
+      field: "user_id",
     },
     productId: {
       type: DataTypes.INTEGER,
@@ -26,6 +27,7 @@ const Cart = sequelize.define(
         key: "id",
       },
       allowNull: false,
+      field: "product_id",
     },
 
     quantity: {

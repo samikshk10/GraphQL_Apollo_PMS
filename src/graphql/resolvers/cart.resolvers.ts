@@ -10,7 +10,11 @@ import { JwtPayload } from "jsonwebtoken";
 
 export const cartResolvers = {
   Query: {
-    getcart: async (parent: any, args: any, context: ContextInterface) => {
+    getcart: async (
+      parent: ParentNode,
+      args: any,
+      context: ContextInterface
+    ) => {
       console.log("hello world");
       try {
         if (!context?.token) {
@@ -20,7 +24,7 @@ export const cartResolvers = {
         const tokenData = (await authenticate(context?.token)) as JwtPayload;
         if (tokenData?.user) {
           const getcart = await Cart.findAll({
-            where: { user_id: tokenData?.user?.id },
+            where: { userId: tokenData?.user?.id },
             include: [
               {
                 model: Product,
@@ -66,7 +70,7 @@ export const cartResolvers = {
   },
   Mutation: {
     addtocart: async (
-      parents: any,
+      parents: ParentNode,
       args: { input: addCartInterface },
       context: ContextInterface
     ) => {
@@ -97,7 +101,7 @@ export const cartResolvers = {
         const existingCartEntry = await Cart.findOne({
           where: {
             product_id,
-            user_id: tokenData?.user?.id,
+            userId: tokenData?.user?.id,
           },
         });
 
@@ -108,7 +112,7 @@ export const cartResolvers = {
           const cartUpdate = await Cart.update(
             { quantity: newQuantity },
             {
-              where: { product_id, user_id: tokenData?.user?.id },
+              where: { product_id, userId: tokenData?.user?.id },
             }
           );
           if (!cartUpdate) {
@@ -147,7 +151,7 @@ export const cartResolvers = {
     },
 
     removefromcart: async (
-      parents: any,
+      parents: ParentNode,
       args: { input: removeCartInterface },
       context: ContextInterface
     ) => {
@@ -175,8 +179,18 @@ export const cartResolvers = {
           ],
         });
 
+        if (!cartItem) {
+          throw new GraphQLError("Cart Item is not found", {
+            extensions: {
+              code: "CART_NOT_FOUND",
+              http: { status: 401 },
+              message: "The Cart Item is not found ",
+            },
+          });
+        }
+
         const productData = await Product.findByPk(
-          cartItem?.dataValues.product_id
+          cartItem?.dataValues.productId
         );
         if (!productData) {
           throw new GraphQLError("Product not found", {
@@ -188,17 +202,7 @@ export const cartResolvers = {
           });
         }
 
-        if (!cartItem) {
-          throw new GraphQLError("Cart Item is not found", {
-            extensions: {
-              code: "CART_NOT_FOUND",
-              http: { status: 401 },
-              message: "The Cart Item is not found ",
-            },
-          });
-        }
-
-        if (tokenData?.user?.id !== cartItem!.dataValues.user_id) {
+        if (tokenData?.user?.id !== cartItem!.dataValues.userId) {
           throw new GraphQLError("The user is not authorized", {
             extensions: {
               code: "UNAUTHORIZED_USER",
@@ -208,16 +212,20 @@ export const cartResolvers = {
           });
         }
 
-        console.log("this is cartItem", cartItem);
-
         if (!cartItem) {
           throw new Error(`Cart with ID ${cart_id} not found`);
         }
 
         await cartItem.destroy();
+        console.log("this is cartItem", cartItem);
         console.log(cartItem);
         return {
-          data: cartItem,
+          data: {
+            id: cartItem?.dataValues.id,
+            quantity: cartItem?.dataValues.quantity,
+            userproduct: cartItem?.dataValues.product,
+          },
+
           message: "Product removed from  Cart",
         };
       } catch (error: any) {
@@ -226,7 +234,7 @@ export const cartResolvers = {
     },
 
     removeallfromcart: async (
-      parents: any,
+      parents: ParentNode,
       args: any,
       context: ContextInterface
     ) => {
@@ -238,7 +246,7 @@ export const cartResolvers = {
 
       try {
         const cartItems = await Cart.findAll({
-          where: { user_id: tokenData?.user?.id },
+          where: { userId: tokenData?.user?.id },
           include: [
             {
               model: Product,

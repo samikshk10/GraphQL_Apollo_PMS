@@ -24,7 +24,7 @@ const Product = sequelize.define<ProductInterface>(
       defaultValue: "Others",
       allowNull: false,
     },
-    user_id: {
+    userId: {
       type: DataTypes.INTEGER,
       references: {
         table: "Users",
@@ -33,15 +33,7 @@ const Product = sequelize.define<ProductInterface>(
       onUpdate: "CASCADE",
       onDelete: "CASCADE",
       allowNull: false,
-    },
-
-    createdAt: {
-      allowNull: false,
-      type: DataTypes.DATE,
-    },
-    updatedAt: {
-      allowNull: false,
-      type: DataTypes.DATE,
+      field: "user_id",
     },
   },
   {

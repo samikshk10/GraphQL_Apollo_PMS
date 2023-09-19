@@ -1,6 +1,6 @@
 import { DataTypes } from "@sequelize/core";
 import { sequelize } from "../config";
-import { User } from "./index";
+import { Order, User } from "./index";
 import { Product } from "./index";
 
 const OrderItems = sequelize.define(
@@ -12,22 +12,25 @@ const OrderItems = sequelize.define(
       primaryKey: true,
       type: DataTypes.INTEGER,
     },
-    order_id: {
+
+    orderId: {
       type: DataTypes.INTEGER,
       references: {
         table: "Orders",
         key: "id",
       },
       allowNull: false,
+      field: "order_id",
     },
 
-    product_id: {
+    productId: {
       type: DataTypes.INTEGER,
       references: {
         table: "Products",
         key: "id",
       },
       allowNull: false,
+      field: "product_id",
     },
 
     quantity: {
@@ -39,30 +42,22 @@ const OrderItems = sequelize.define(
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
-    createdAt: {
-      allowNull: false,
-      type: DataTypes.DATE,
-    },
-    updatedAt: {
-      allowNull: false,
-      type: DataTypes.DATE,
-    },
   },
   {
-    tableName: "Orders",
+    tableName: "OrderItems",
     timestamps: true,
     underscored: true,
   }
 );
 
-OrderItems.belongsTo(User, {
-  foreignKey: "user_id",
-  as: "user",
-});
-
 OrderItems.belongsTo(Product, {
   foreignKey: "product_id",
   as: "product",
 });
+
+// OrderItems.belongsTo(Product, {
+//   foreignKey: "product_id",
+//   as: "product",
+// });
 
 export default OrderItems;

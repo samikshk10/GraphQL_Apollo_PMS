@@ -8,6 +8,13 @@ export const cartTypeDefs = `#graphql
 
   type MultiCartResponse{
     data: [Cart]
+    message: String
+  }
+
+  type SingleCartResponse{
+    data: Cart
+    quantity: Int
+    message: String
   }
 
   type CartResponse{
@@ -34,7 +41,7 @@ export const cartTypeDefs = `#graphql
 
    type Mutation {
     addtocart(input: addCartInput): CartResponse
-    removefromcart(input: removeCartInput):CartResponse
+    removefromcart(input: removeCartInput):SingleCartResponse
     removeallfromcart:MultiCartResponse
   }
 `;

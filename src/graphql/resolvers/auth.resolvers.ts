@@ -36,7 +36,10 @@ export const authResolvers = {
   },
   Mutation: {
     //User Mutation
-    signup: async (parents: any, args: { input: SignUpInputInterface }) => {
+    signup: async (
+      parents: ParentNode,
+      args: { input: SignUpInputInterface }
+    ) => {
       const { firstName, lastName, email, password, confirmPassword } =
         args.input;
 
@@ -96,7 +99,7 @@ export const authResolvers = {
         throw new Error(error.message);
       }
     },
-    login: async (parent: any, args: { input: LoginInputInterface }) => {
+    login: async (parent: ParentNode, args: { input: LoginInputInterface }) => {
       const { email, password } = args.input;
       if (password!.length < 8) {
         // throw new Error("The password must be of at least 8 characters");

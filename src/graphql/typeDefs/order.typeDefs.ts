@@ -1,23 +1,61 @@
 export const orderTypeDefs = `#graphql
 
 type Order {
-    product: Product
-    user: User
+    id: Int
+    userId:Int
+    status: String
+    totalPrice: Int
 }
 
-  type OrderResponse{
-    data: [Order]
-    quantity: String
-    totalprice: Int
-    message: String
-  }
+type OrderItems{
+  id: Int
+  orderId: Int
+  productId:Int
+  quantity: Int
+  amount: Int
+}
+
+type OrderItemswithProduct{
+  id: Int
+  orderId: Int
+  productId:Int
+  quantity: Int
+  amount: Int
+  product: Product
+
+}
+
+type OrderWithOrderItems{
+    id: Int
+    userId:Int
+    status: String
+    totalPrice: Int
+    orderItems: [OrderItemswithProduct]
+}
+
+# type OrderProduct{
+#   orderitems:[OrderItems]
+#   order: [Order]
+#   product: [Product]
+
+# }
+
+type MultiOrderResponse{
+  data: [OrderWithOrderItems]
+  message: String
+}
+
+type SingleOrderResponse{
+  data: [OrderItems]
+  message: String
+}
 
 
   type Query {
-    getorder:OrderResponse
+    getorder:MultiOrderResponse
   }
 
    type Mutation {
-    checkout: OrderResponse
+    checkout: SingleOrderResponse
   }
 `;
