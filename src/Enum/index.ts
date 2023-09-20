@@ -1,2 +1,2 @@
-export * from "./ProductCategory";
-export * from "./OrderStatus";
+export * from "./ProductCategoryEnum";
+export * from "./OrderStatusEnum";

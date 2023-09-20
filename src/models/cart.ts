@@ -2,7 +2,7 @@ import { DataTypes } from "@sequelize/core";
 import { sequelize } from "../config";
 import { Product, User } from "./index";
 
-const Cart = sequelize.define(
+export const Cart = sequelize.define(
   "Cart",
   {
     id: {
@@ -67,4 +67,3 @@ Product.belongsTo(Cart, {
   foreignKey: "id",
   as: "cart",
 });
-export default Cart;

@@ -34,7 +34,6 @@ export const productResolvers = {
             },
           });
         }
-        console.log(getProduct);
         return {
           data: getProduct,
         };
@@ -49,13 +48,19 @@ export const productResolvers = {
     ) => {
       try {
         if (!context?.token) {
-          throw new Error("Authorization Token Missing");
+          throw new GraphQLError("Authorization Token Missing", {
+            extensions: {
+              code: "AUTHORIZATION_FAILED",
+              http: { status: 401 },
+              message: `Authorization Token Missing`,
+            },
+          });
         }
 
         const tokenData = (await authenticate(context?.token)) as JwtPayload;
-        if (tokenData?.user) {
+        if (tokenData?.data) {
           const getProduct = await Product.findAll({
-            where: { user_id: tokenData?.user?.id },
+            where: { user_id: tokenData?.data?.id },
             include: [
               {
                 model: User,
@@ -74,7 +79,6 @@ export const productResolvers = {
             });
           }
 
-          console.log(getProduct);
           return {
             data: getProduct,
           };
@@ -94,7 +98,13 @@ export const productResolvers = {
       const { name, price, category } = args.input;
 
       if (!context?.token) {
-        throw new Error("Authorization Token missing");
+        throw new GraphQLError("Authorization Token Missing", {
+          extensions: {
+            code: "AUTHORIZATION_FAILED",
+            http: { status: 401 },
+            message: `Authorization Token Missing`,
+          },
+        });
       }
 
       const tokenData = (await authenticate(context?.token)) as JwtPayload;
@@ -103,11 +113,10 @@ export const productResolvers = {
         const newUser = await Product.create({
           name,
           price,
-          userId: tokenData?.user?.id,
+          userId: tokenData?.data?.id,
           category,
         });
 
-        console.log(newUser);
         return {
           data: newUser,
           message: "Product added successfully",
@@ -126,7 +135,13 @@ export const productResolvers = {
       const { id } = args.input;
 
       if (!context?.token) {
-        throw new Error("Authorization Token missing");
+        throw new GraphQLError("Authorization Token Missing", {
+          extensions: {
+            code: "AUTHORIZATION_FAILED",
+            http: { status: 401 },
+            message: `Authorization Token Missing`,
+          },
+        });
       }
 
       const tokenData = (await authenticate(context?.token)) as JwtPayload;
@@ -134,10 +149,16 @@ export const productResolvers = {
       try {
         const ProductDetails = await Product.findOne({ where: { id } });
         if (ProductDetails == null) {
-          throw new Error("Product Not Found");
+          throw new GraphQLError("Product Not Found", {
+            extensions: {
+              code: "PRODUCT_NOT_FOUND",
+              http: { status: 404 },
+              message: `Product is Not found for given ID`,
+            },
+          });
         }
 
-        if (tokenData?.user?.id !== ProductDetails.user_id) {
+        if (tokenData?.data?.id !== ProductDetails.user_id) {
           throw new GraphQLError("Unauthorized User", {
             extensions: {
               code: "UNAUTHORIZED",
@@ -148,7 +169,6 @@ export const productResolvers = {
 
         await ProductDetails.destroy();
 
-        console.log(ProductDetails);
         return {
           message: "Product Deleted successfully",
           data: ProductDetails,
@@ -166,7 +186,13 @@ export const productResolvers = {
       const { id, name, price, category } = args.input;
 
       if (!context?.token) {
-        throw new Error("Authorization Token missing");
+        throw new GraphQLError("Authorization Token Missing", {
+          extensions: {
+            code: "AUTHORIZATION_FAILED",
+            http: { status: 401 },
+            message: `Authorization Token Missing`,
+          },
+        });
       }
 
       const tokenData = (await authenticate(context?.token)) as JwtPayload;
@@ -177,7 +203,7 @@ export const productResolvers = {
           throw new Error("Product Not Found");
         }
 
-        if (tokenData?.user?.id !== ProductDetails.user_id) {
+        if (tokenData?.data?.id !== ProductDetails.user_id) {
           throw new GraphQLError("Unauthorized User", {
             extensions: {
               code: "UNAUTHORIZED",
@@ -193,7 +219,6 @@ export const productResolvers = {
           category,
         };
 
-        console.log(newData);
         const updateProduct = await Product.update(newData, {
           where: { id },
         });
@@ -207,7 +232,6 @@ export const productResolvers = {
             },
           });
         }
-        console.log("this is update Product" + updateProduct);
         return {
           data: { id, ...newData },
           message: "Product Updated successfully",

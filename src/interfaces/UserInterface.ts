@@ -1,4 +1,5 @@
 import { Model } from "@sequelize/core";
+import { JwtPayload } from "jsonwebtoken";
 
 export interface UserInterface extends Model {
   id?: string;
@@ -8,6 +9,11 @@ export interface UserInterface extends Model {
   password?: string;
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+export interface UserResponseInterface {
+  data?: string | JwtPayload;
+  token: string;
 }
 
 export interface SignUpInputInterface {

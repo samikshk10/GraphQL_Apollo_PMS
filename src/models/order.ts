@@ -1,9 +1,9 @@
 import { DataTypes } from "@sequelize/core";
 import { sequelize } from "../config";
 import { OrderItems } from "./index";
-import { OrderStatus } from "../Enum";
+import { OrderStatusEnum } from "../Enum";
 
-const Order = sequelize.define(
+export const Order = sequelize.define(
   "Order",
   {
     id: {
@@ -26,7 +26,7 @@ const Order = sequelize.define(
     },
 
     status: {
-      type: DataTypes.ENUM(...Object.values(OrderStatus)),
+      type: DataTypes.ENUM(...Object.values(OrderStatusEnum)),
       defaultValue: "pending",
       allowNull: false,
     },
@@ -55,5 +55,3 @@ OrderItems.belongsTo(Order, {
   foreignKey: "order_id",
   as: "order",
 });
-
-export default Order;

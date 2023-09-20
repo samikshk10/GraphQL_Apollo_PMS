@@ -33,12 +33,6 @@ type OrderWithOrderItems{
     orderItems: [OrderItemswithProduct]
 }
 
-# type OrderProduct{
-#   orderitems:[OrderItems]
-#   order: [Order]
-#   product: [Product]
-
-# }
 
 type MultiOrderResponse{
   data: [OrderWithOrderItems]
@@ -53,6 +47,9 @@ type SingleOrderResponse{
 
   type Query {
     getorder:MultiOrderResponse
+    gettodayorder:MultiOrderResponse
+
+    getallorder: MultiOrderResponse
   }
 
    type Mutation {

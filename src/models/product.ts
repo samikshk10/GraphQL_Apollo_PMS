@@ -2,7 +2,7 @@ import { DataTypes } from "@sequelize/core";
 import { sequelize } from "../config";
 import { ProductInterface } from "../interfaces/ProductInterface";
 
-const Product = sequelize.define<ProductInterface>(
+export const Product = sequelize.define<ProductInterface>(
   "Product",
   {
     id: {
@@ -43,5 +43,3 @@ const Product = sequelize.define<ProductInterface>(
     paranoid: true,
   }
 );
-
-export default Product;

@@ -7,7 +7,6 @@ import jwt from "jsonwebtoken";
 export const authResolvers = {
   Query: {
     users: async () => {
-      console.log("users query");
       try {
         const users = await User.findAll();
         if (users.length <= 0) {
@@ -36,6 +35,7 @@ export const authResolvers = {
   },
   Mutation: {
     //User Mutation
+
     signup: async (
       parents: ParentNode,
       args: { input: SignUpInputInterface }
@@ -90,7 +90,6 @@ export const authResolvers = {
           email,
           password: hashedPassword,
         });
-        console.log(newUser);
         return {
           data: newUser,
           message: "Sign up Successfully",
@@ -102,7 +101,6 @@ export const authResolvers = {
     login: async (parent: ParentNode, args: { input: LoginInputInterface }) => {
       const { email, password } = args.input;
       if (password!.length < 8) {
-        // throw new Error("The password must be of at least 8 characters");
         throw new GraphQLError(
           "The password must be of at least 8 characters",
           {

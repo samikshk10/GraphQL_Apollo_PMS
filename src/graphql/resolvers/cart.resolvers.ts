@@ -15,16 +15,21 @@ export const cartResolvers = {
       args: any,
       context: ContextInterface
     ) => {
-      console.log("hello world");
       try {
         if (!context?.token) {
-          throw new Error("Authorization Token Missing");
+          throw new GraphQLError("Authorization Token Missing", {
+            extensions: {
+              code: "AUTHORIZATION_FAILED",
+              http: { status: 401 },
+              message: `Authorization Token Missing`,
+            },
+          });
         }
 
         const tokenData = (await authenticate(context?.token)) as JwtPayload;
-        if (tokenData?.user) {
+        if (tokenData?.data) {
           const getcart = await Cart.findAll({
-            where: { userId: tokenData?.user?.id },
+            where: { userId: tokenData?.data?.id },
             include: [
               {
                 model: Product,
@@ -58,7 +63,6 @@ export const cartResolvers = {
             quantity: cart.dataValues.quantity,
           }));
 
-          console.log("this is getCart >>>>", getcart);
           return {
             data: cartData,
           };
@@ -77,7 +81,13 @@ export const cartResolvers = {
       const { quantity, product_id } = args.input;
 
       if (!context?.token) {
-        throw new Error("Authorization Token missing");
+        throw new GraphQLError("Authorization Token Missing", {
+          extensions: {
+            code: "AUTHORIZATION_FAILED",
+            http: { status: 401 },
+            message: `Authorization Token Missing`,
+          },
+        });
       }
 
       const tokenData = (await authenticate(context?.token)) as JwtPayload;
@@ -92,27 +102,25 @@ export const cartResolvers = {
           ],
         });
 
-        console.log("this is product>>>>", product);
-
         if (!product) {
           throw new Error(`Product with ID ${product_id} not found`);
         }
         // Check if the product is already in the cart
+
         const existingCartEntry = await Cart.findOne({
           where: {
             product_id,
-            userId: tokenData?.user?.id,
+            userId: tokenData?.data?.id,
           },
         });
 
         if (existingCartEntry) {
           const newQuantity = existingCartEntry.dataValues.quantity + quantity;
 
-          console.log("this is new quanityt" + newQuantity);
           const cartUpdate = await Cart.update(
             { quantity: newQuantity },
             {
-              where: { product_id, userId: tokenData?.user?.id },
+              where: { product_id, userId: tokenData?.data?.id },
             }
           );
           if (!cartUpdate) {
@@ -124,7 +132,6 @@ export const cartResolvers = {
               },
             });
           }
-          console.log("Updated cart entry:", existingCartEntry);
 
           return {
             data: product,
@@ -134,10 +141,9 @@ export const cartResolvers = {
         } else {
           const newCartEntry = await Cart.create({
             productId: product_id,
-            userId: tokenData?.user?.id,
+            userId: tokenData?.data?.id,
             quantity,
           });
-          console.log("New cart entry:", newCartEntry);
 
           return {
             data: product,
@@ -158,7 +164,13 @@ export const cartResolvers = {
       const { cart_id } = args.input;
 
       if (!context?.token) {
-        throw new Error("Authorization Token missing");
+        throw new GraphQLError("Authorization Token Missing", {
+          extensions: {
+            code: "AUTHORIZATION_FAILED",
+            http: { status: 401 },
+            message: `Authorization Token Missing`,
+          },
+        });
       }
 
       const tokenData = (await authenticate(context?.token)) as JwtPayload;
@@ -202,7 +214,7 @@ export const cartResolvers = {
           });
         }
 
-        if (tokenData?.user?.id !== cartItem!.dataValues.userId) {
+        if (tokenData?.data?.id !== cartItem!.dataValues.userId) {
           throw new GraphQLError("The user is not authorized", {
             extensions: {
               code: "UNAUTHORIZED_USER",
@@ -217,8 +229,6 @@ export const cartResolvers = {
         }
 
         await cartItem.destroy();
-        console.log("this is cartItem", cartItem);
-        console.log(cartItem);
         return {
           data: {
             id: cartItem?.dataValues.id,
@@ -239,14 +249,20 @@ export const cartResolvers = {
       context: ContextInterface
     ) => {
       if (!context?.token) {
-        throw new Error("Authorization Token missing");
+        throw new GraphQLError("Authorization Token Missing", {
+          extensions: {
+            code: "AUTHORIZATION_FAILED",
+            http: { status: 401 },
+            message: `Authorization Token Missing`,
+          },
+        });
       }
 
       const tokenData = (await authenticate(context?.token)) as JwtPayload;
 
       try {
         const cartItems = await Cart.findAll({
-          where: { userId: tokenData?.user?.id },
+          where: { userId: tokenData?.data?.id },
           include: [
             {
               model: Product,
@@ -271,7 +287,7 @@ export const cartResolvers = {
           });
         }
         for (let cartItem of cartItems) {
-          if (tokenData?.user?.id !== cartItem!.dataValues.user_id) {
+          if (tokenData?.data?.id !== cartItem!.dataValues.user_id) {
             throw new GraphQLError("The user is not authorized", {
               extensions: {
                 code: "UNAUTHORIZED_USER",
@@ -288,7 +304,6 @@ export const cartResolvers = {
           quantity: cart.dataValues.quantity,
         }));
 
-        console.log(cartItems);
         return {
           data: cartData,
           message: "Removed All Item from Cart",

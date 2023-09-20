@@ -3,12 +3,14 @@
     "target": "ES6",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "outDir": "dist",
+    "outDir": "./dist",
     "rootDir": "./src",
     "esModuleInterop": true,
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "types": ["node"]
-  }
+  },
+  "include": ["src/**/*.ts", "src/config/dbConfig.js"], // TypeScript source files
+  "exclude": ["node_modules"]
 }

@@ -1,6 +1,9 @@
 import jwt from "jsonwebtoken";
 import { GraphQLError } from "graphql";
-export const authenticate = async (bearerToken: string) => {
+import { UserResponseInterface } from "../interfaces";
+export const authenticate = async (
+  bearerToken: string
+): Promise<UserResponseInterface> => {
   try {
     const token = bearerToken.split("Bearer ")[1];
     if (token) {
@@ -8,7 +11,7 @@ export const authenticate = async (bearerToken: string) => {
         const user = jwt.verify(token, process.env.JWT_SECRET!);
         if (user) {
           return {
-            user,
+            data: user,
             token,
           };
         }
@@ -22,7 +25,13 @@ export const authenticate = async (bearerToken: string) => {
         throw new Error("Invalid or Expired token");
       }
     } else {
-      throw new Error("Authorization token must be 'Bearer [token]'");
+      throw new GraphQLError("Authorization Must be Bearer [Token]", {
+        extensions: {
+          code: "AUTHORIZATION_FAILED",
+          http: { status: 401 },
+          message: `Authorization Must be Bearer `,
+        },
+      });
     }
   } catch (error: any) {
     throw new Error(error.message);

@@ -2,7 +2,7 @@ import { DataTypes } from "@sequelize/core";
 import { sequelize } from "../config";
 import { UserInterface } from "../interfaces";
 
-const User = sequelize.define<UserInterface>(
+export const User = sequelize.define<UserInterface>(
   "User",
   {
     id: {
@@ -35,5 +35,3 @@ const User = sequelize.define<UserInterface>(
     underscored: true,
   }
 );
-
-export default User;

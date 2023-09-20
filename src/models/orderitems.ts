@@ -1,9 +1,8 @@
 import { DataTypes } from "@sequelize/core";
 import { sequelize } from "../config";
-import { Order, User } from "./index";
-import { Product } from "./index";
+import { Order, User, Product } from "./index";
 
-const OrderItems = sequelize.define(
+export const OrderItems = sequelize.define(
   "OrderItems",
   {
     id: {

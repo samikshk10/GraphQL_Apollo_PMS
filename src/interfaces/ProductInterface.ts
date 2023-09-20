@@ -1,5 +1,5 @@
 import { Model } from "@sequelize/core";
-import { ProductCategory } from "../Enum";
+import { ProductCategoryEnum } from "../Enum";
 
 export interface ProductInterface extends Model {
   id?: number;
@@ -14,7 +14,7 @@ export interface ProductInterface extends Model {
 export interface AddProductInterface {
   name: string;
   price: number;
-  category: ProductCategory;
+  category: ProductCategoryEnum;
 }
 
 export interface DeleteProductInterface {
