@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import { User } from "../../models";
 import { LoginInputInterface, SignUpInputInterface } from "../../interfaces";
 import jwt from "jsonwebtoken";
+import { loginSchemaValidator, signUpSchemaValidator } from "../../Validator";
 
 export const authResolvers = {
   Query: {
@@ -40,35 +41,48 @@ export const authResolvers = {
       parents: ParentNode,
       args: { input: SignUpInputInterface }
     ) => {
-      const { firstName, lastName, email, password, confirmPassword } =
-        args.input;
-
-      if (password.length < 8 || confirmPassword.length < 8) {
+      const { error } = signUpSchemaValidator.validate(args.input, {
+        abortEarly: false,
+      });
+      if (error) {
         throw new GraphQLError(
-          "The password must be of at least 8 characters",
+          "Failed to create character due to validation error",
           {
             extensions: {
-              code: "INVALID_PASSWORD_FORMAT",
-              http: {
-                status: 401,
-              },
-              messsage: `Password must be at least 8 characters`,
+              ValidationErrors: error.details,
             },
           }
         );
       }
+      const { firstName, lastName, email, password, confirmPassword } =
+        args.input;
 
-      if (password !== confirmPassword) {
-        throw new GraphQLError(`Password doesn't match with confirm password`, {
-          extensions: {
-            code: "INVALID_CPASSWORD",
-            http: {
-              status: 409,
-            },
-            message: `Confirm password doesn't match`,
-          },
-        });
-      }
+      // if (password.length < 8 || confirmPassword.length < 8) {
+      //   throw new GraphQLError(
+      //     "The password must be of at least 8 characters",
+      //     {
+      //       extensions: {
+      //         code: "INVALID_PASSWORD_FORMAT",
+      //         http: {
+      //           status: 401,
+      //         },
+      //         messsage: `Password must be at least 8 characters`,
+      //       },
+      //     }
+      //   );
+      // }
+
+      // if (password !== confirmPassword) {
+      //   throw new GraphQLError(`Password doesn't match with confirm password`, {
+      //     extensions: {
+      //       code: "INVALID_CPASSWORD",
+      //       http: {
+      //         status: 409,
+      //       },
+      //       message: `Confirm password doesn't match`,
+      //     },
+      //   });
+      // }
       try {
         const userFind = await User.findOne({ where: { email: email } });
 
@@ -99,7 +113,21 @@ export const authResolvers = {
       }
     },
     login: async (parent: ParentNode, args: { input: LoginInputInterface }) => {
+      const { error } = loginSchemaValidator.validate(args.input, {
+        abortEarly: false,
+      });
+      if (error) {
+        throw new GraphQLError(
+          "Failed to create character due to validation error",
+          {
+            extensions: {
+              ValidationErrors: error.details,
+            },
+          }
+        );
+      }
       const { email, password } = args.input;
+
       if (password!.length < 8) {
         throw new GraphQLError(
           "The password must be of at least 8 characters",
